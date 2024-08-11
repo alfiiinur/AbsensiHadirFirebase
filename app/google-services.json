@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1006930279894",
+    "project_id": "absensihadir-c223c",
+    "storage_bucket": "absensihadir-c223c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1006930279894:android:8cd8d1a3caeffa565df877",
+        "android_client_info": {
+          "package_name": "com.example.absensihadir"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhBWgXdw5JV8bXFy7IJjmrzoRVkFlS5cw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
