@@ -1,8 +1,8 @@
 package com.example.absensihadir.Auth
 
 data class MataPelajaran(
-    val id: String = "",
-    val nama: String = "",
+    val id: String? = null,
+    val namaGuru: String = "",
     val kelas: String = "",
     val mataPelajaran : String  = "",
     val hari: String = "",

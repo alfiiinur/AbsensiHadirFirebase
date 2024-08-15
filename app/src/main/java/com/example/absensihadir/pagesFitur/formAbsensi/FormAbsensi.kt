@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -20,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
@@ -41,6 +43,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -51,8 +54,13 @@ import com.example.absensihadir.Auth.Attendance
 import com.example.absensihadir.Auth.AttendanceViewModel
 import com.example.absensihadir.Auth.AuthState
 import com.example.absensihadir.Auth.AuthViewModel
+import com.example.absensihadir.Auth.Guru
+import com.example.absensihadir.Auth.GuruViewModel
+import com.example.absensihadir.Auth.MataPelajaranViewModel
 import com.example.absensihadir.Auth.SaveState
 import com.example.absensihadir.ui.theme.Gren_btn
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -125,27 +133,41 @@ fun FormAbsensiPelajaran(
 
     //save data guru
     var expandedGuru by remember { mutableStateOf(false)}
+    //call collection firestore
+    val  guruModel= GuruViewModel()
+    val guruL = Guru()
+
+    val daftarGuru by guruModel.guruList.observeAsState(emptyList())
+
+
+
     val daftarGuruDummy = listOf("Guru1", "Guru2", "Guru3")
 
     //save data hari
     var expandedHari by remember { mutableStateOf(false)}
-    val daftarHariDummy = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu")
+    val daftarHariDummy = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat")
+
 
 
 
 
     //save mata pelajaran
     var expandedPelajaran by remember { mutableStateOf(false)}
-    val daftarPelajaranDummy = listOf("Matematika", "Bahasa Indonesia", "Bahasa Inggris", "IPA", "IPS")
+    val daftarPelajaranDummy = listOf("PPKN", "BK", "MATEMATIKA","BAHASA INGGRIS", "BAHASA INDONESIA", "IPS", "IPA", "PARKARYA", "PENJASKES", "PENDIDIKAN AGAMA", "BTQ", "TIK","BAHASA DAERAH", "ISTIRAHAT", "SHOLAT DHUHUR", "ISTIGHSA,SENAM")
+
+//    val pelajaranModel = MataPelajaranViewModel()
+//    val daftarPelajaran by pelajaranModel.mataPelajaranList.observeAsState(emptyList())
+//
+
 
     //drodpwon sesi
-    var expandedSesi by remember { mutableStateOf(false)}
-    val daftarSesiDummy = listOf("Jam Ke 1", "Jam Ke 2", "Jam Ke 3", "Jam Ke 4", "Jam Ke 5")
+    var expandedSesiAbsen by remember { mutableStateOf(false)}
+    val sesiOptionAbsen = listOf("Jam Ke 0", "Jam Ke 1", "Jam Ke 2", "Jam Ke 3", "Jam Ke 4", "Jam Ke 5", "Jam Ke 6", "Jam Ke 7", "Jam Ke 8", "Jam Ke 9")
 
 
     //kelas absen
     var expandedKelas by remember { mutableStateOf(false)}
-    val daftarKelasDummy = listOf("X", "XI", "XII")
+    val daftarKelasDummy = listOf("7.1", "7.2","8.1", "8.2","9.1","9.2")
 
 
     //jam absen
@@ -184,12 +206,35 @@ fun FormAbsensiPelajaran(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(20.dp),
+            .padding(20.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Formulir Absensi Pelajaran", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+//        Text(text = "Formulir Absensi Pelajaran", fontSize = 24.sp, fontWeight = FontWeight.Bold)
 
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 22.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                navController.popBackStack() // Ini untuk kembali ke halaman sebelumnya
+            }) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBackIosNew, // Ikon panah balik
+                    contentDescription = "Back",
+                    tint = Color.Black // Warna ikon
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp)) // Memberi sedikit jarak antara ikon dan teks
+            Text(
+                text = "Formulir Absensi Pelajaran",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         Box(modifier = Modifier.fillMaxWidth()){
@@ -208,9 +253,9 @@ fun FormAbsensiPelajaran(
             DropdownMenu(expanded = expandedGuru, onDismissRequest = { expandedGuru = false }, modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)) {
-                daftarGuruDummy.forEach { guru ->
-                    DropdownMenuItem(text = { Text(text = guru) }, onClick = {
-                        namaGuru = guru
+                daftarGuru.forEach { guru ->
+                    DropdownMenuItem(text = { Text(text = guru.nama) }, onClick = {
+                        namaGuru = guru.nama
                         expandedGuru = false
                     })
                 }
@@ -220,11 +265,24 @@ fun FormAbsensiPelajaran(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(value = email, onValueChange = {
-            email = it
-        }, label = {
-            Text(text = "Email")
-        }, modifier = Modifier.fillMaxWidth())
+        // Ambil email pengguna yang sedang login
+        val auth = FirebaseAuth.getInstance()
+        email = auth.currentUser?.email ?: ""
+
+//        OutlinedTextField(value = email, onValueChange = {
+//            email = it
+//        }, label = {
+//            Text(text = "Email")
+//        }, modifier = Modifier.fillMaxWidth())
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { /* Tidak ada perubahan karena readOnly */ },
+            label = { Text(text = "Email") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            enabled = false
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -332,13 +390,6 @@ fun FormAbsensiPelajaran(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(value = keterangan, onValueChange = {
-            keterangan = it
-        }, label = {
-            Text(text = "Keterangan")
-        }, modifier = Modifier.fillMaxWidth())
-        Spacer(modifier = Modifier.height(8.dp))
-
         Row(modifier = Modifier.fillMaxWidth()) {
             OutlinedTextField(
                 value = jmlSiswaMasuk,
@@ -371,8 +422,8 @@ fun FormAbsensiPelajaran(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        var expandedSesiAbsen by remember { mutableStateOf(false)}
-        val sesiOptionAbsen = listOf("Jam Ke 1", "Jam Ke 2", "Jam Ke 3", "Jam Ke 4", "Jam Ke 5")
+
+
 
         MultiSelectDropdown(
             selectedOptions = jam,
@@ -380,6 +431,15 @@ fun FormAbsensiPelajaran(
             label = "Jam Absen",
             options = sesiOptionAbsen
         )
+
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(value = keterangan, onValueChange = {
+            keterangan = it
+        }, label = {
+            Text(text = "Keterangan")
+        }, modifier = Modifier.fillMaxWidth())
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -410,7 +470,8 @@ fun FormAbsensiPelajaran(
 
         },
             modifier =
-            Modifier.fillMaxWidth()
+            Modifier
+                .fillMaxWidth()
                 .height(50.dp),
             shape = RoundedCornerShape(5.dp),
             colors = ButtonDefaults.buttonColors(Gren_btn)
@@ -420,6 +481,7 @@ fun FormAbsensiPelajaran(
         if (saveState is SaveState.Loading){
             CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
         }
+        Spacer(modifier = Modifier.height(22.dp))
     }
 }
 

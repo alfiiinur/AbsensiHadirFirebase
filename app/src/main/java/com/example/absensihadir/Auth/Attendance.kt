@@ -4,7 +4,7 @@ import java.util.Calendar
 import java.util.TimeZone
 
 data class Attendance(
-    val id: String = "",
+    val id: String? = null,
     val namaGuru: String = "",
     val email: String = "",
     val hari_absen: String = "",

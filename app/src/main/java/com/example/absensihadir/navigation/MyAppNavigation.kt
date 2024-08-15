@@ -11,12 +11,12 @@ import com.example.absensihadir.Auth.GuruViewModel
 import com.example.absensihadir.Auth.MataPelajaranViewModel
 import com.example.absensihadir.pagesFitur.HomePage
 import com.example.absensihadir.pagesFitur.LoginPage.LoginPage
+import com.example.absensihadir.pagesFitur.LoginPage.ResetPasswordForm
 import com.example.absensihadir.pagesFitur.LoginPage.SingUpPage
 import com.example.absensihadir.pagesFitur.adminPage.AdminPage
 import com.example.absensihadir.pagesFitur.adminPage.DataAdminMataPelajaran
 import com.example.absensihadir.pagesFitur.adminPage.DataGuruPage
 import com.example.absensihadir.pagesFitur.adminPage.DataMataPelajaranPage
-import com.example.absensihadir.pagesFitur.adminPage.DataSiswaPage
 import com.example.absensihadir.pagesFitur.adminPage.ListDataAbsenPage
 import com.example.absensihadir.pagesFitur.formAbsensi.FormAbsensiPelajaran
 import com.example.absensihadir.pagesFitur.formAbsensi.FormGuru
@@ -64,16 +64,19 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
         composable("data_guru"){
             DataGuruPage(modifier, navController, viewModel = GuruViewModel())
         }
-        composable("data_siswa"){
-            DataSiswaPage(modifier, navController, authViewModel)
-        }
+
 
         composable("data_admin_mata_pelajaran"){
             DataAdminMataPelajaran(modifier, navController, authViewModel, viewModel = MataPelajaranViewModel())
         }
 
         composable("data_mata_pelajaran"){
-            DataMataPelajaranPage(modifier, navController, authViewModel)
+            DataMataPelajaranPage(modifier, navController, authViewModel, viewModel = MataPelajaranViewModel())
+        }
+
+        //reset password
+        composable("reset_pass"){
+            ResetPasswordForm(modifier, navController, authViewModel)
         }
 
 

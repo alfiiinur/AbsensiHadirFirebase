@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -30,9 +32,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,14 +65,6 @@ fun SingUpPage(modifier: Modifier = Modifier, navController: NavController, auth
     val context = LocalContext.current
 
 
-//    LaunchedEffect(authState.value){
-//        when(authState.value){
-//            is AuthState.Authenticated -> navController.navigate("home")
-//            is AuthState.Error -> Toast.makeText(context, (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
-//            else -> Unit
-//
-//        }
-//    }
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -114,7 +112,11 @@ fun SingUpPage(modifier: Modifier = Modifier, navController: NavController, auth
                 label = {
                     Text(text = "Massukan Email")
                 },
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
+
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -134,7 +136,8 @@ fun SingUpPage(modifier: Modifier = Modifier, navController: NavController, auth
                             contentDescription = if (passwordVisible) "Hide password" else "Show password"
                         )
                     }
-                }
+                },
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(8.dp))

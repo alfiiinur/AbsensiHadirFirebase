@@ -23,12 +23,16 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -67,6 +71,7 @@ import com.example.absensihadir.Auth.Attendance
 import com.example.absensihadir.Auth.AttendanceViewModel
 import com.example.absensihadir.Auth.AuthViewModel
 import com.example.absensihadir.pagesFitur.formAbsensi.DatePickerOutlinedTextField
+import com.example.absensihadir.pagesFitur.formAbsensi.EditAttendanceDialog
 import com.example.absensihadir.pagesFitur.formAbsensi.MultiSelectDropdown
 import com.example.absensihadir.ui.theme.Del_btn
 import com.example.absensihadir.ui.theme.Gren_btn
@@ -127,7 +132,29 @@ fun ListDataAbsenPage(
         verticalArrangement = Arrangement.Top
     ) {
         // Dropdown Button for selecting session
-        
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                navController.navigate("home_admin") // Ini untuk kembali ke halaman sebelumnya
+            }) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBackIosNew, // Ikon panah balik
+                    contentDescription = "Back",
+                    tint = Color.Black // Warna ikon
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp)) // Memberi sedikit jarak antara ikon dan teks
+            Text(
+                text = "DATA ABSENSI ADMIN",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Button(onClick = {
             navController.navigate("form_absen")
@@ -140,53 +167,6 @@ fun ListDataAbsenPage(
         ) {
             Text(text = "Tambah Data Absensi")
         }
-        
-
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(vertical = 10.dp)
-//        ) {
-//            OutlinedButton(
-//                onClick = { expanded = true },
-//                modifier = Modifier.fillMaxWidth(),
-//                shape = RoundedCornerShape(5.dp)
-//            ) {
-//                Text(text = "Jam: $selectedSession")
-//            }
-//
-//            DropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false },
-//                modifier = Modifier.fillMaxWidth()
-//            ) {
-//                sessionFilterOptions.forEach { session ->
-//                    DropdownMenuItem(
-//                        text = {
-//                            Text(text = session)
-//                        },
-//                        onClick = {
-//                            selectedSession = session
-//                            expanded = false
-//
-//                        }
-//                    )
-//                }
-//            }
-//        }
-
-//        MultiSelectDropdown(
-//            selectedOptions = jam_sel,
-//            onOptionsSelected = { newSelectedSessions ->
-//                jam_sel = if (newSelectedSessions.contains("All Sessions")) {
-//                    listOf("All Sessions")
-//                } else {
-//                    newSelectedSessions
-//                }
-//            },
-//            label = "Jam Absen",
-//            options = sessionFilterOptions
-//        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -222,6 +202,45 @@ fun ListDataAbsenPage(
                 Text(text = "Export CSV")
             }
         }
+        Spacer(modifier = Modifier.height(8.dp))
+
+        var showDeleteAllByDateDialog by remember { mutableStateOf(false) }
+        Button(
+            onClick = {
+                showDeleteAllByDateDialog = true
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            shape = RoundedCornerShape(5.dp),
+            colors = ButtonDefaults.buttonColors(Del_btn)
+        ) {
+            Text(text = "Delete All Data")
+        }
+
+        if (showDeleteAllByDateDialog){
+            AlertDialog(
+                onDismissRequest = { showDeleteAllByDateDialog = false },
+                title = { Text("Konfirmasi Hapus") },
+                text = { Text("Apakah Anda yakin ingin menghapus data pada tanggal $tanggal_export ini?") },
+                confirmButton = {
+                    Button(onClick = {
+                        viewModel.deleteAttendanceByDate(selectedDate = tanggal_export)
+                        showDeleteAllByDateDialog = false
+                    }) {
+                        Text(text = "Hapus")
+                    }
+                },
+                dismissButton = {
+                    Button(onClick = { showDeleteAllByDateDialog = false }) {
+                        Text(text = "Batal")
+                    }
+                }
+            )
+        }
+
+
+
 
         Spacer(modifier = Modifier.height(8.dp))
         LazyColumn {
@@ -233,33 +252,15 @@ fun ListDataAbsenPage(
     }
 }
 
+
+
 @Composable
 fun AttendanceItem(attendance: Attendance, onDelete: (Attendance) -> Unit, onEdit: (Attendance) -> Unit) {
     val dateFormatter = SimpleDateFormat("HH:mm:ss", Locale("id", "ID"))
     val formattedDate = dateFormatter.format(Date(attendance.createdAt))
 
-    var showDialog by remember { mutableStateOf(false) }
-
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text(text = "Konfirmasi Hapus") },
-            text = { Text("Apakah Anda yakin ingin menghapus data sesi ini?") },
-            confirmButton = {
-                Button(onClick = {
-                    onDelete(attendance)
-                    showDialog = false
-                }) {
-                    Text("Hapus")
-                }
-            },
-            dismissButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("Batal")
-                }
-            }
-        )
-    }
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var showEditDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -270,51 +271,84 @@ fun AttendanceItem(attendance: Attendance, onDelete: (Attendance) -> Unit, onEdi
             modifier = Modifier
                 .padding(16.dp)
         ) {
+            Text(text = "Nama: ${attendance.namaGuru}", fontWeight = FontWeight.Bold)
+            Text(text = "Email: ${attendance.email}")
+            Text(text = "Hari: ${attendance.hari_absen}")
+            Text(text = "Tanggal: ${attendance.tanggal_absen}")
+            Text(text = "Mata Pelajaran: ${attendance.mataPelajaran}")
+            Text(text = "Kelas: ${attendance.kelasAbsen}")
+            Text(text = "Keterangan: ${attendance.keterangan}")
+            Text(text = "Siswa Hadir: ${attendance.jmlSiswaMasuk}")
+            Text(text = "Siswa Tidak Hadir: ${attendance.jmlSiswaTidakMasuk}")
+            Text(text = "Jam: ${attendance.jam}")
+            Text(text = "Jam Absen: $formattedDate")
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Column {
-                    Text(text = "Nama: ${attendance.namaGuru}", fontWeight = FontWeight.Bold)
-                    Text(text = "Email: ${attendance.email}")
-                    Text(text = "Hari: ${attendance.hari_absen}")
-                    Text(text = "Tanggal: ${attendance.tanggal_absen}")
-                    Text(text = "Mata Pelajaran: ${attendance.mataPelajaran}")
-                    Text(text = "Kelas: ${attendance.kelasAbsen}")
-                    Text(text = "Keterangan: ${attendance.keterangan}")
-                    Text(text = "Siswa Hadir: ${attendance.jmlSiswaMasuk}")
-                    Text(text = "Siswa Tidak Hadir: ${attendance.jmlSiswaTidakMasuk}")
-                    Text(text = "Jam: ${attendance.jam}")
-                    Text(text = "Jam Absen: $formattedDate")
-//                    Text(text = "Tanggal Absen: ${formatTimestampToDateTime(attendance.createdAt)}")
-                }
-                Column(
-                    modifier = Modifier.align(Alignment.CenterVertically)
+                Button(
+                    onClick = { showEditDialog = true },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(5.dp),
+                    colors = ButtonDefaults.buttonColors(edt_btn)
                 ) {
-                    SmallFloatingActionButton(onClick = {
-                        // Handle edit action
-                        onEdit(attendance)
-                    },
-                        modifier = Modifier,
-                        containerColor = edt_btn,
-                        contentColor = Color.White
-                        ) {
-                        Icon(Icons.Default.Edit, contentDescription = "Edit")
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    SmallFloatingActionButton(onClick = {
-                        // Handle delete action
-                        showDialog = true
-
-                    },
-                        modifier = Modifier,
-                        containerColor = Del_btn,
-                        contentColor = Color.White
-                    ) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete")
-                    }
-
+                    Text(text = "Edit Data", color = Color.White)
                 }
+
+                Button(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp)
+                        .height(50.dp),
+                    shape = RoundedCornerShape(5.dp),
+                    colors = ButtonDefaults.buttonColors(Del_btn)
+                ) {
+                    Text(text = "Delete Data", color = Color.White)
+                }
+            }
+
+            // Edit Dialog
+            if (showEditDialog) {
+                EditAttendanceDialog(
+                    attendance = attendance,
+                    onDismiss = { showEditDialog = false },
+                    onEdit = { updatedAttendance ->
+                        onEdit(updatedAttendance)
+                        showEditDialog = false
+                    }
+                )
+            }
+
+            // Delete Confirmation Dialog
+            if (showDeleteDialog) {
+                AlertDialog(
+                    onDismissRequest = { showDeleteDialog = false },
+                    title = { Text("Konfirmasi Hapus") },
+                    text = { Text("Apakah Anda yakin ingin menghapus data ini?") },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                onDelete(attendance)
+                                showDeleteDialog = false
+                            }
+                        ) {
+                            Text("Hapus")
+                        }
+                    },
+                    dismissButton = {
+                        Button(onClick = { showDeleteDialog = false }) {
+                            Text("Batal")
+                        }
+                    }
+                )
             }
         }
     }

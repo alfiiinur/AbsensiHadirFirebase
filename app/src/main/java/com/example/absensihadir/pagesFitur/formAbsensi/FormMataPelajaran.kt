@@ -4,14 +4,22 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.rounded.ArrowBackIosNew
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -26,15 +34,21 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.absensihadir.Auth.Guru
+import com.example.absensihadir.Auth.GuruViewModel
 import com.example.absensihadir.Auth.MataPelajaran
 import com.example.absensihadir.Auth.MataPelajaranViewModel
 import com.example.absensihadir.Auth.SaveStateMataPelajaran
+import com.example.absensihadir.ui.theme.Gren_btn
 import java.util.UUID
 
 @Composable
@@ -44,7 +58,7 @@ fun FormMataPelajaran(
     viewModel: MataPelajaranViewModel,
     onMataPelajaranAdded: () -> Unit
 ) {
-    var nama by remember { mutableStateOf("") }
+    var namaGuru by remember { mutableStateOf("") }
     var selectedKelas by remember { mutableStateOf("") }
     var selectedMataPelajaran by remember { mutableStateOf("") }
     var selectedHari by remember { mutableStateOf("") }
@@ -52,11 +66,14 @@ fun FormMataPelajaran(
     var waktuSelesai by remember { mutableStateOf("") }
 
 
+    //save data guru
+    var expandedGuru by remember { mutableStateOf(false)}
+
     // Options for dropdowns
     val waktuMulaiOption = listOf("06:00","06:50","07:00","07:40","08:20","09:00","09:20","09:40","09:45","10:00","10:30","10:40","11:20","12:00","12:30","13:00","13:10","13:50")
     val waktuSelesaiOption = listOf("06:00","06:50","07:00","07:40","08:20","09:00","09:20","09:40","09:45","10:00","10:30","10:40","11:20","12:00","12:30","13:00","13:10","13:50")
     val kelasOptions = listOf("7.1", "7.2", "8.1", "8.2", "9.1", "9.2")
-    val mataPelajaranOptions = listOf("PPKN", "BK", "MATEMATIKA","BAHASA INGGRIS", "BAHASA INDONESIA", "IPS", "IPA", "PARKARYA", "PENJASKES", "PENDIDIKAN AGAMA", "BTQ", "TIK","BAHASA DAERAH", "ISTIRAHAT", "SHOLAT DHUHUR", "ISTIGHSA,SENAM")
+//    val mataPelajaranOptions = listOf("PPKN", "BK", "MATEMATIKA","BAHASA INGGRIS", "BAHASA INDONESIA", "IPS", "IPA", "PARKARYA", "PENJASKES", "PENDIDIKAN AGAMA", "BTQ", "TIK","BAHASA DAERAH", "ISTIRAHAT", "SHOLAT DHUHUR", "ISTIGHSA,SENAM")
     val hariOptions = listOf("Senin", "Selasa", "Rabu", "Kamis", "Jumat")
 
     // State for managing dropdown visibility,
@@ -68,6 +85,10 @@ fun FormMataPelajaran(
 
     val saveStateMataPelajaran by viewModel.saveMataPelajaran.observeAsState()
     val context = LocalContext.current
+
+    val  guruModel= GuruViewModel()
+    val guruL = Guru()
+    val daftarGuru by guruModel.guruList.observeAsState(emptyList())
 
     LaunchedEffect(saveStateMataPelajaran) {
         when (saveStateMataPelajaran) {
@@ -86,16 +107,60 @@ fun FormMataPelajaran(
         modifier = modifier
             .fillMaxSize()
             .padding(20.dp)
+            .verticalScroll(rememberScrollState()) // Enable scrolling
     ) {
-        Text(text = "Tambah Data Mata Pelajaran", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+//        Text(text = "Tambah Data Mata Pelajaran", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = {
+                navController.navigate("home_admin") // Ini untuk kembali ke halaman sebelumnya
+            }) {
+                Icon(
+                    imageVector = Icons.Rounded.ArrowBackIosNew, // Ikon panah balik
+                    contentDescription = "Back",
+                    tint = Color.Black // Warna ikon
+                )
+            }
+            Spacer(modifier = Modifier.width(8.dp)) // Memberi sedikit jarak antara ikon dan teks
+            Text(
+                text = "Tambah Data Pelajaran",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(value = nama, onValueChange = {
-            nama = it
-        }, label = {
-            Text(text = "Nama")
-        }, modifier = modifier.fillMaxWidth())
+        Box(modifier = Modifier.fillMaxWidth()){
+            OutlinedTextField(
+                value = namaGuru,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text(text = "Nama Guru") },
+                trailingIcon = {
+                    IconButton(onClick = { expandedGuru = true }) {
+                        Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
+                    }
+                }, modifier = Modifier
+                    .fillMaxWidth()
+            )
+            DropdownMenu(expanded = expandedGuru, onDismissRequest = { expandedGuru = false }, modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)) {
+                daftarGuru.forEach { guru ->
+                    DropdownMenuItem(text = { Text(text = guru.nama) }, onClick = {
+                        namaGuru = guru.nama
+                        expandedGuru = false
+                    })
+                }
+
+            }
+        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -135,37 +200,46 @@ fun FormMataPelajaran(
         Spacer(modifier = Modifier.height(8.dp))
 
         // Dropdown for Mata Pelajaran
-        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
-            OutlinedTextField(
-                value = selectedMataPelajaran,
-                onValueChange = {},
-                readOnly = true,
-                label = { Text(text = "Mata Pelajaran") },
-                trailingIcon = {
-                    IconButton(onClick = { expandedMataPelajaran = true }) {
-                        Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
-                    }
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expandedMataPelajaran = true }
-            )
-            DropdownMenu(
-                expanded = expandedMataPelajaran,
-                onDismissRequest = { expandedMataPelajaran = false },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                mataPelajaranOptions.forEach { option ->
-                    DropdownMenuItem(
-                        text = { Text(text = option) },
-                        onClick = {
-                            selectedMataPelajaran = option
-                            expandedMataPelajaran = false
-                        }
-                    )
-                }
-            }
-        }
+//        Box(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+//            OutlinedTextField(
+//                value = selectedMataPelajaran,
+//                onValueChange = {},
+//                readOnly = true,
+//                label = { Text(text = "Mata Pelajaran") },
+//                trailingIcon = {
+//                    IconButton(onClick = { expandedMataPelajaran = true }) {
+//                        Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null)
+//                    }
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .clickable { expandedMataPelajaran = true }
+//            )
+//            DropdownMenu(
+//                expanded = expandedMataPelajaran,
+//                onDismissRequest = { expandedMataPelajaran = false },
+//                modifier = Modifier.fillMaxWidth()
+//            ) {
+//                mataPelajaranOptions.forEach { option ->
+//                    DropdownMenuItem(
+//                        text = { Text(text = option) },
+//                        onClick = {
+//                            selectedMataPelajaran = option
+//                            expandedMataPelajaran = false
+//                        }
+//                    )
+//                }
+//            }
+//        }
+
+
+        OutlinedTextField(
+            value = selectedMataPelajaran,
+            onValueChange = { selectedMataPelajaran = it },
+            label = { Text("Mata Pelajaran") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -278,7 +352,7 @@ fun FormMataPelajaran(
         Button(onClick = {
             val mataPelajaran = MataPelajaran(
                 id = UUID.randomUUID().toString(),
-                nama = nama,
+                namaGuru = namaGuru,
                 kelas = selectedKelas,
                 mataPelajaran = selectedMataPelajaran,
                 hari = selectedHari,
@@ -287,7 +361,13 @@ fun FormMataPelajaran(
             )
             viewModel.addMataPelajaran(mataPelajaran)
             onMataPelajaranAdded()
-        }, modifier = modifier.fillMaxWidth()) {
+        }, modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp),
+            shape = RoundedCornerShape(5.dp),
+            colors = ButtonDefaults.buttonColors(
+                Gren_btn)
+        ) {
             Text(text = "Simpan Mata Pelajaran")
         }
 

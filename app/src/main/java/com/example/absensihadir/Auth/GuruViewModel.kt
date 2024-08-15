@@ -25,11 +25,11 @@ class GuruViewModel : ViewModel() {
         db.collection("guru")
             .get()
             .addOnSuccessListener { result ->
-                val guruList = result.map{
-                    document -> document.toObject(Guru::class.java)
-                }
-                Log.d("GuruViewModel", "Guru List: $guruList")
+                val guruList = result.documents.map{
+                    document -> document.toObject(Guru::class.java)?.copy(id = document.id)
+                }.filterNotNull()
                 _guruList.value = guruList
+                Log.d("GuruViewModel", "Guru List: $guruList")
             }
             .addOnFailureListener { exception ->
                 Log.w("GuruViewModel", "Error fetching guru list", exception)
@@ -44,7 +44,7 @@ class GuruViewModel : ViewModel() {
             return
         }
 
-        if (guru.nama.isEmpty() || guru.email.isEmpty() || guru.mataPelajaran.isEmpty() || guru.jamAjar.isEmpty()){
+        if (guru.nama.isEmpty() || guru.email.isEmpty() || guru.noHp.isEmpty() || guru.mataPelajaran.isEmpty()){
             _saveStateGuru.value = SaveStateGuru.Error("Semua Form Harus Diisi")
             return
         }
@@ -52,8 +52,8 @@ class GuruViewModel : ViewModel() {
         val guru = hashMapOf(
             "nama" to guru.nama,
             "email" to guru.email,
+            "noHp" to guru.noHp,
             "mataPelajaran" to guru.mataPelajaran,
-            "jamAjar" to guru.jamAjar
                     )
 
 
@@ -68,7 +68,58 @@ class GuruViewModel : ViewModel() {
             }
     }
 
+
+
+    //delete guru
+    fun deleteGuru(guru: Guru) {
+        val documentId = guru.id
+        if (documentId != null) {
+            db.collection("guru").document(documentId)
+                .delete()
+                .addOnSuccessListener {
+                    //delete suscces
+                    _saveStateGuru.value = SaveState.Success
+                    fetchGuruList()
+                    Log.d("GuruViewModel", "Guru deleted successfully")
+                }
+                .addOnFailureListener {
+                    //delete failed
+                        it ->
+                    _saveStateGuru.value = SaveState.Error(it.message ?: "Unknown Error")
+                    Log.w("GuruViewModel", "Error deleting guru", it)
+                }
+        } else {
+            _saveStateGuru.value = SaveStateGuru.Error("Invalid guru ID")
+        }
+    }
+
+    //edit guru
+    fun editGuru(guru: Guru){
+        val documentId = guru.id
+        if (documentId != null) {
+            db.collection("guru").document(documentId)
+                .set(guru)
+                .addOnSuccessListener {
+                    //edit suscces
+                    _saveStateGuru.value = SaveState.Success
+                    fetchGuruList()
+                    Log.d("GuruViewModel", "Guru edited successfully")
+                }
+                .addOnFailureListener{
+                    //edit failed
+                        it ->
+                    _saveStateGuru.value = SaveState.Error(it.message ?: "Unknown Error")
+                    Log.w("GuruViewModel", "Error editing guru", it)
+                }
+
+        }else{
+            _saveStateGuru.value = SaveState.Error("Invalid guru ID")
+        }
+    }
+
 }
+
+
 
 sealed class SaveStateGuru{
     object Success : SaveState()

@@ -10,6 +10,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -34,6 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -61,14 +65,6 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
     val context = LocalContext.current
 
 
-//    LaunchedEffect(authState.value){
-//        when(authState.value){
-//            is AuthState.Authenticated -> navController.navigate("home")
-//            is AuthState.Error -> Toast.makeText(context, (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
-//            else -> Unit
-//
-//        }
-//    }
 
     LaunchedEffect(authState.value) {
         when (authState.value) {
@@ -94,6 +90,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "Login Aplikasi Absensi", fontSize = 30.sp, fontWeight = FontWeight.Bold, color = edt_btn)
+        Text(text = "SMP DHARMA WANITA 7", fontSize = 24.sp, fontWeight = FontWeight.SemiBold)
         Spacer(modifier = Modifier.height(8.dp))
             //icon drawable
 
@@ -116,7 +113,10 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
                 label = {
                     Text(text = "Massukan Email")
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -137,7 +137,8 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
                             contentDescription = if (passwordVisible) "Hide password" else "Show password"
                         )
                     }
-                }
+                },
+                singleLine = true
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -152,6 +153,9 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
                 enabled = authState.value != AuthState.Loading) {
                 Text(text = "Login", fontWeight = FontWeight.Bold, fontSize = 20.sp)
             }
+
+
+
         }
 
        TextButton(onClick = {
@@ -159,6 +163,7 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
        }) {
            Text(text = "Belum Punya Akun Guru ?")
        }
+
     }
 }
 

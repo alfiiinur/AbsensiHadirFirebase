@@ -19,3 +19,20 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+
+
+# Firebase rules
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+
+# Google API and Protobuf rules
+-keep class com.google.api.** { *; }
+-keep class com.google.protobuf.** { *; }
+
+# Google Guava rules
+-keep class com.google.common.** { *; }
+
+# Your own application classes (keep all classes in the package)
+-keep class com.example.myapp.** { *; }
+-dontwarn java.lang.reflect.AnnotatedType

@@ -17,6 +17,7 @@ class MataPelajaranViewModel : ViewModel() {
     val mataPelajaranList : LiveData<List<MataPelajaran>> = _mataPelajaranList
 
 
+
     init {
         fetchMataPelajaranList()
     }
@@ -26,9 +27,9 @@ class MataPelajaranViewModel : ViewModel() {
             .get()
             .addOnSuccessListener {
                 result ->
-                val list = result.map { document ->
-                    document.toObject(MataPelajaran::class.java)
-                }
+                val list = result.documents.map { document ->
+                    document.toObject(MataPelajaran::class.java)?.copy(id = document.id)
+                }.filterNotNull()
                 _mataPelajaranList.value = list
             }
             .addOnFailureListener{
@@ -44,13 +45,13 @@ class MataPelajaranViewModel : ViewModel() {
             return
         }
 
-        if (matapelajaran.nama.isEmpty() || matapelajaran.kelas.isEmpty() || matapelajaran.mataPelajaran.isEmpty() || matapelajaran.hari.isEmpty() || matapelajaran.waktuMulai.isEmpty() || matapelajaran.waktuSelesai.isEmpty()){
+        if (matapelajaran.kelas.isEmpty() || matapelajaran.mataPelajaran.isEmpty() || matapelajaran.hari.isEmpty() || matapelajaran.waktuMulai.isEmpty() || matapelajaran.waktuSelesai.isEmpty()){
             _saveMataPelajaran.value = SaveStateMataPelajaran.Error("Semua Form Harus Diisi")
             return
         }
 
         val matapelajaran = hashMapOf(
-            "nama" to matapelajaran.nama,
+            "namaGuru" to matapelajaran.namaGuru,
             "kelas" to matapelajaran.kelas,
             "mataPelajaran" to matapelajaran.mataPelajaran,
             "hari" to matapelajaran.hari,
@@ -69,6 +70,48 @@ class MataPelajaranViewModel : ViewModel() {
                 it -> _saveMataPelajaran.value = SaveStateMataPelajaran.Error(it.message ?: "Unknown Error")
             }
     }
+
+
+    //edit pelajaran
+    fun editPelajaran(pelajaran: MataPelajaran){
+        val documentId = pelajaran.id
+        if(documentId != null){
+            db.collection("mataPelajaran").document(documentId)
+                .set(pelajaran)
+                .addOnSuccessListener {
+                    _saveMataPelajaran.value = SaveState.Success
+                    fetchMataPelajaranList()
+                }
+                .addOnFailureListener {
+                    it -> _saveMataPelajaran.value = SaveState.Error(it.message ?: "Unknow Erorr")
+                }
+        }else{
+            _saveMataPelajaran.value = SaveState.Error("Invalid Matapelajaran ID")
+        }
+    }
+
+
+    //DELETE MATAPELAJARAN
+    fun deletePelajaran(pelajaran: MataPelajaran){
+        val documentId = pelajaran.id
+        if (documentId != null){
+            db.collection("mataPelajaran").document(documentId)
+                .delete()
+                .addOnSuccessListener {
+                    _saveMataPelajaran.value = SaveStateMataPelajaran.Success
+                    fetchMataPelajaranList()
+                }
+                .addOnFailureListener {
+                    it -> _saveMataPelajaran.value = SaveStateMataPelajaran.Error(it.message ?: "Unknoow Erorr")
+
+                }
+        }else{
+            _saveMataPelajaran.value = SaveStateMataPelajaran.Error("INVALID MATAPLEAJARAN ID")
+        }
+    }
+
+
+
 
 
 }
